@@ -1,0 +1,7 @@
+SigninLogs
+| where TimeGenerated >= ago(10m)  // Adjust time as needed
+| where UserPrincipalName == "user@domain.com"  // Replace with the target user's UPN
+| project TimeGenerated, UserPrincipalName, ConditionalAccessPolicies, ResourceDisplayName, ResultDescription
+| mv-expand ConditionalAccessPolicies  // Expands the ConditionalAccessPolicies array
+| where tostring(ConditionalAccessPolicies.result) == "success" or tostring(ConditionalAccessPolicies.result) == "notApplied" or tostring(ConditionalAccessPolicies.result) == "failure" // Filter for applied policies
+| project TimeGenerated, UserPrincipalName, ConditionalAccessPolicy = tostring(ConditionalAccessPolicies.displayName), Status = tostring(ConditionalAccessPolicies.result), ResourceDisplayName, ResultDescription
